@@ -1,0 +1,41 @@
+product_id,product_name,category,vendor_id,unit_cost,list_price,launch_date
+1,Electronics item 01,Electronics,1,2974.95,3950.81,2023-06-01
+2,Home & Kitchen item 02,Home & Kitchen,5,365.03,616.76,2023-06-01
+3,Fashion item 03,Fashion,5,322.56,583.56,2023-06-01
+4,Beauty item 04,Beauty,5,823.61,1670.92,2023-06-01
+5,Sports item 05,Sports,4,1068.65,1603.71,2024-10-09
+6,Electronics item 06,Electronics,6,3073.99,4042.73,2023-06-01
+7,Home & Kitchen item 07,Home & Kitchen,5,1714.87,2874.65,2023-06-01
+8,Fashion item 08,Fashion,5,709.93,1231.9,2024-05-20
+9,Beauty item 09,Beauty,5,683.47,1430.85,2023-06-01
+10,Sports item 10,Sports,5,1185.76,1764.4,2024-10-20
+11,Electronics item 11,Electronics,1,3140.67,3916.54,2023-06-01
+12,Home & Kitchen item 12,Home & Kitchen,6,1365.75,2246.94,2023-06-01
+13,Fashion item 13,Fashion,3,1089.65,2041.56,2023-06-01
+14,Beauty item 14,Beauty,6,577.75,1113.87,2024-07-13
+15,Sports item 15,Sports,5,2147.8,3258.52,2023-06-01
+16,Electronics item 16,Electronics,1,4513.28,5762.48,2023-06-01
+17,Home & Kitchen item 17,Home & Kitchen,1,450.43,738.73,2023-06-01
+18,Fashion item 18,Fashion,1,934.81,1744.7,2023-06-01
+19,Beauty item 19,Beauty,4,675.74,1324.98,2024-12-11
+20,Sports item 20,Sports,3,797.54,1179.47,2023-06-01
+21,Electronics item 21,Electronics,3,1744.82,2138.14,2023-06-01
+22,Home & Kitchen item 22,Home & Kitchen,6,1126.68,1827.59,2023-06-01
+23,Fashion item 23,Fashion,2,978.52,1762.47,2023-06-01
+24,Beauty item 24,Beauty,2,133.28,255.63,2023-06-01
+25,Sports item 25,Sports,2,1460.43,2105.91,2023-06-01
+26,Electronics item 26,Electronics,6,3306.75,4216.6,2023-06-01
+27,Home & Kitchen item 27,Home & Kitchen,1,777.65,1270.62,2023-06-01
+28,Fashion item 28,Fashion,6,282.73,537.8,2023-06-01
+29,Beauty item 29,Beauty,1,737.24,1439.96,2023-06-01
+30,Sports item 30,Sports,2,2076.29,3083.25,2023-06-01
+31,Electronics item 31,Electronics,5,1261.71,1682.7,2023-06-01
+32,Home & Kitchen item 32,Home & Kitchen,5,691.17,1123.62,2024-05-25
+33,Fashion item 33,Fashion,3,1008.16,1873.25,2023-06-01
+34,Beauty item 34,Beauty,6,539.12,1087.31,2023-06-01
+35,Sports item 35,Sports,4,1613.14,2297.31,2023-06-01
+36,Electronics item 36,Electronics,1,2484.38,3071.88,2024-05-09
+37,Home & Kitchen item 37,Home & Kitchen,4,603.39,1014.58,2023-06-01
+38,Fashion item 38,Fashion,3,822.96,1424.89,2023-06-01
+39,Beauty item 39,Beauty,3,464.96,956.21,2024-07-06
+40,Sports item 40,Sports,3,1413.64,2202.29,2023-06-01

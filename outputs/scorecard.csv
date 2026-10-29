@@ -1,0 +1,10 @@
+perspective,kpi,key,actual,target,attainment,status,unit
+Financial,Revenue vs budget,revenue_vs_budget,0.9235108515767926,1.0,0.9235108515767926,Amber,pct
+Financial,Gross margin %,gross_margin_pct,0.2513877080723583,0.28,0.8978132431155652,Red,pct
+Financial,Marketing ROI (first-year gross profit per rupee of spend),marketing_roi,1.8259175301178237,2.0,0.9129587650589118,Amber,x
+Customer,Repeat customer rate,repeat_customer_rate,0.7172547124214597,0.45,1.593899360936577,Green,pct
+Customer,Annual retention,annual_retention,0.5695952615992103,0.5,1.1391905231984205,Green,pct
+Internal process,On-time delivery,on_time_rate,0.8624585141690069,0.85,1.0146570754929494,Green,pct
+Internal process,Return rate (by value),return_rate,0.08187639071974487,0.08,0.9770826400229637,Amber,pct
+Learning & growth,Revenue from new products,new_product_rev_share,0.21158741025992467,0.15,1.4105827350661646,Green,pct
+Learning & growth,New customer growth YoY,new_customer_growth,0.3129667345553293,0.1,3.129667345553293,Green,pct
