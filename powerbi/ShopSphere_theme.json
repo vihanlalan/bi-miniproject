@@ -1,0 +1,18 @@
+{
+  "name": "ShopSphere",
+  "dataColors": ["#2a6f97", "#e07a1f", "#2e8b57", "#c0392b", "#d4a017", "#8a8f98", "#1d3557", "#6a994e"],
+  "background": "#ffffff",
+  "foreground": "#1f2933",
+  "tableAccent": "#1d3557",
+  "good": "#2e8b57",
+  "neutral": "#d4a017",
+  "bad": "#c0392b",
+  "textClasses": {
+    "title": {"fontFace": "Segoe UI Semibold", "fontSize": 14, "color": "#1d3557"},
+    "label": {"fontFace": "Segoe UI", "fontSize": 11, "color": "#1f2933"},
+    "callout": {"fontFace": "Segoe UI Semibold", "fontSize": 24, "color": "#1d3557"}
+  },
+  "visualStyles": {
+    "page": {"*": {"background": [{"color": {"solid": {"color": "#f3f5f8"}}}]}}
+  }
+}

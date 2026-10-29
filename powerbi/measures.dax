@@ -1,0 +1,201 @@
+// ============================================================================
+// ShopSphere Power BI model: DAX measures and what-if tables
+// Create a table called "Measures" (Home > Enter data > one blank column, then delete the column).
+// Paste each measure with Modeling > New measure. Calculated tables use Modeling > New table.
+// Format: money = Currency 0 dp; % measures = Percentage 1 dp.
+// ============================================================================
+
+// ---------- 1. Core KPIs (react to the report slicers) ----------
+Revenue = SUM ( fact_sales[realised_revenue] )
+
+Gross Profit = SUM ( fact_sales[gross_profit] )
+
+Gross Margin % = DIVIDE ( [Gross Profit], [Revenue] )
+
+Orders = DISTINCTCOUNT ( fact_sales[order_id] )
+
+AOV = DIVIDE ( [Revenue], [Orders] )
+
+Active Customers = DISTINCTCOUNT ( fact_sales[customer_id] )
+
+Return Rate =
+DIVIDE (
+    SUMX ( fact_sales, fact_sales[net_revenue] * fact_sales[returned] ),
+    SUM ( fact_sales[net_revenue] )
+)
+
+On-time % = AVERAGE ( fact_sales[on_time] )
+
+Avg Delivery Days = AVERAGE ( fact_sales[delivery_days] )
+
+Discount % = DIVIDE ( SUM ( fact_sales[discount_amt] ), SUM ( fact_sales[gross_sales] ) )
+
+// ---------- 2. Budget and marketing ----------
+Revenue Budget = SUM ( fact_budget[revenue_budget] )
+
+Revenue vs Budget % = DIVIDE ( [Revenue], [Revenue Budget] )
+
+Budget Variance = [Revenue] - [Revenue Budget]
+
+Marketing Spend = SUM ( fact_marketing[spend] )
+
+Marketing Budget = SUM ( fact_budget[marketing_budget] )
+
+New Customers Paid = SUM ( fact_marketing[new_customers] )
+
+CAC = DIVIDE ( [Marketing Spend], [New Customers Paid] )
+
+Contribution = [Gross Profit] - [Marketing Spend]
+
+// Same month last year, for the monthly trend visuals
+Revenue Last Year Same Month =
+VAR m = MAX ( dim_month[month] )
+VAR y = MAX ( dim_month[year] )
+RETURN
+    CALCULATE ( [Revenue], REMOVEFILTERS ( dim_month ), dim_month[year] = y - 1, dim_month[month] = m )
+
+// ---------- 3. Fixed FY2025 headline figures (ignore the date slicer) ----------
+Revenue FY2025 =
+CALCULATE ( [Revenue], REMOVEFILTERS ( dim_month ), REMOVEFILTERS ( dim_date ), dim_month[year] = 2025 )
+
+Revenue FY2024 =
+CALCULATE ( [Revenue], REMOVEFILTERS ( dim_month ), REMOVEFILTERS ( dim_date ), dim_month[year] = 2024 )
+
+YoY Growth FY2025 = DIVIDE ( [Revenue FY2025], [Revenue FY2024] ) - 1
+
+Gross Margin FY2025 =
+CALCULATE ( [Gross Margin %], REMOVEFILTERS ( dim_month ), REMOVEFILTERS ( dim_date ), dim_month[year] = 2025 )
+
+Contribution FY2025 =
+CALCULATE ( [Contribution], REMOVEFILTERS ( dim_month ), REMOVEFILTERS ( dim_date ), dim_month[year] = 2025 )
+
+Revenue vs Budget FY2025 =
+CALCULATE ( [Revenue vs Budget %], REMOVEFILTERS ( dim_month ), REMOVEFILTERS ( dim_date ), dim_month[year] = 2025 )
+
+On-time FY2025 =
+CALCULATE ( [On-time %], REMOVEFILTERS ( dim_month ), REMOVEFILTERS ( dim_date ), dim_month[year] = 2025 )
+
+Return Rate FY2025 =
+CALCULATE ( [Return Rate], REMOVEFILTERS ( dim_month ), REMOVEFILTERS ( dim_date ), dim_month[year] = 2025 )
+
+// First-year gross profit from customers acquired in 2025 through paid channels, per rupee of spend
+Marketing ROI FY2025 =
+DIVIDE (
+    CALCULATE (
+        [Gross Profit],
+        REMOVEFILTERS ( dim_month ), REMOVEFILTERS ( dim_date ), dim_month[year] = 2025,
+        dim_customer[signup_year] = 2025,
+        dim_customer[channel] <> "Organic"
+    ),
+    CALCULATE ( [Marketing Spend], REMOVEFILTERS ( dim_month ), dim_month[year] = 2025 )
+)
+
+// Colour for conditional formatting (Format > Data colors > fx > Field value)
+Revenue Status Colour =
+SWITCH ( TRUE (), [Revenue vs Budget %] >= 1, "#2e8b57", [Revenue vs Budget %] >= 0.9, "#d4a017", "#c0392b" )
+
+On-time Status Colour =
+SWITCH ( TRUE (), [On-time %] >= 0.85, "#2e8b57", [On-time %] >= 0.765, "#d4a017", "#c0392b" )
+
+// ---------- 4. Customers and segments ----------
+Customers = DISTINCTCOUNT ( dim_customer[customer_id] )
+
+Lifetime Revenue =
+CALCULATE ( [Revenue], REMOVEFILTERS ( dim_month ), REMOVEFILTERS ( dim_date ) )
+
+Revenue Share % =
+DIVIDE ( [Lifetime Revenue], CALCULATE ( [Lifetime Revenue], REMOVEFILTERS ( dim_customer[segment] ) ) )
+
+Buyers =
+CALCULATE ( DISTINCTCOUNT ( fact_sales[customer_id] ), REMOVEFILTERS ( dim_month ), REMOVEFILTERS ( dim_date ) )
+
+Customer Share % =
+DIVIDE ( [Buyers], CALCULATE ( [Buyers], REMOVEFILTERS ( dim_customer[segment] ) ) )
+
+High Churn Risk Customers =
+CALCULATE ( DISTINCTCOUNT ( dim_customer[customer_id] ), dim_customer[churn_risk_band] = "High" )
+
+// ---------- 5. What-if parameters ----------
+// Calculated tables (Modeling > New table). Add the Value column of each as a slicer (single select).
+Price Change % = GENERATESERIES ( -15, 15, 1 )
+Discount Change pts = GENERATESERIES ( -5, 8, 1 )
+Marketing Change % = GENERATESERIES ( -50, 100, 5 )
+Return Rate Change pts = GENERATESERIES ( -5, 5, 1 )
+Supplier Cost Change % = GENERATESERIES ( -10, 15, 1 )
+Elasticity x10 = GENERATESERIES ( -30, -5, 1 )
+Marketing Exponent x100 = GENERATESERIES ( 20, 100, 5 )
+
+// Measures that read the slicers. With nothing selected they fall back to the baseline assumption.
+Price Delta = SELECTEDVALUE ( 'Price Change %'[Value], 0 ) / 100
+Discount Delta = SELECTEDVALUE ( 'Discount Change pts'[Value], 0 ) / 100
+Marketing Delta = SELECTEDVALUE ( 'Marketing Change %'[Value], 0 ) / 100
+Return Delta = SELECTEDVALUE ( 'Return Rate Change pts'[Value], 0 ) / 100
+Cost Delta = SELECTEDVALUE ( 'Supplier Cost Change %'[Value], 0 ) / 100
+Elasticity = SELECTEDVALUE ( 'Elasticity x10'[Value], -13 ) / 10
+Marketing Exponent = SELECTEDVALUE ( 'Marketing Exponent x100'[Value], 60 ) / 100
+
+// Baseline = FY2025 actuals, independent of the date slicer
+Base Gross List =
+CALCULATE ( SUM ( fact_sales[gross_sales] ), REMOVEFILTERS ( dim_month ), REMOVEFILTERS ( dim_date ), dim_month[year] = 2025 )
+
+Base Discount =
+CALCULATE ( SUM ( fact_sales[discount_amt] ), REMOVEFILTERS ( dim_month ), REMOVEFILTERS ( dim_date ), dim_month[year] = 2025 )
+
+Base COGS =
+CALCULATE ( SUM ( fact_sales[cogs] ), REMOVEFILTERS ( dim_month ), REMOVEFILTERS ( dim_date ), dim_month[year] = 2025 )
+
+Base Net =
+CALCULATE ( SUM ( fact_sales[net_revenue] ), REMOVEFILTERS ( dim_month ), REMOVEFILTERS ( dim_date ), dim_month[year] = 2025 )
+
+Base Returned Net =
+CALCULATE (
+    SUMX ( fact_sales, fact_sales[net_revenue] * fact_sales[returned] ),
+    REMOVEFILTERS ( dim_month ), REMOVEFILTERS ( dim_date ), dim_month[year] = 2025
+)
+
+Base Marketing =
+CALCULATE ( SUM ( fact_marketing[spend] ), REMOVEFILTERS ( dim_month ), dim_month[year] = 2025 )
+
+Base New Customer Share =
+DIVIDE (
+    CALCULATE ( SUM ( fact_sales[realised_revenue] ), REMOVEFILTERS ( dim_month ), REMOVEFILTERS ( dim_date ), dim_month[year] = 2025, dim_customer[signup_year] = 2025 ),
+    CALCULATE ( SUM ( fact_sales[realised_revenue] ), REMOVEFILTERS ( dim_month ), REMOVEFILTERS ( dim_date ), dim_month[year] = 2025 )
+)
+
+// The projection. Same maths as bi/scenario.py. Return handling cost is 15% of returned value.
+Projected Contribution =
+VAR g = [Base Gross List]
+VAR d0 = DIVIDE ( [Base Discount], g )
+VAR r0 = DIVIDE ( [Base Returned Net], [Base Net] )
+VAR d = MIN ( 0.9, MAX ( 0, d0 + [Discount Delta] ) )
+VAR priceFactor = ( 1 + [Price Delta] ) * ( 1 - d ) / ( 1 - d0 )
+VAR mkt = 1 + [Base New Customer Share] * ( POWER ( 1 + [Marketing Delta], [Marketing Exponent] ) - 1 )
+VAR units = POWER ( priceFactor, [Elasticity] ) * mkt
+VAR net = g * units * ( 1 + [Price Delta] ) * ( 1 - d )
+VAR cogs = [Base COGS] * units * ( 1 + [Cost Delta] )
+VAR r = MAX ( 0, r0 + [Return Delta] )
+VAR gp = net * ( 1 - r ) - cogs * ( 1 - r ) - net * r * 0.15
+RETURN
+    gp - [Base Marketing] * ( 1 + [Marketing Delta] )
+
+Projected Revenue =
+VAR g = [Base Gross List]
+VAR d0 = DIVIDE ( [Base Discount], g )
+VAR r0 = DIVIDE ( [Base Returned Net], [Base Net] )
+VAR d = MIN ( 0.9, MAX ( 0, d0 + [Discount Delta] ) )
+VAR priceFactor = ( 1 + [Price Delta] ) * ( 1 - d ) / ( 1 - d0 )
+VAR mkt = 1 + [Base New Customer Share] * ( POWER ( 1 + [Marketing Delta], [Marketing Exponent] ) - 1 )
+VAR units = POWER ( priceFactor, [Elasticity] ) * mkt
+VAR net = g * units * ( 1 + [Price Delta] ) * ( 1 - d )
+VAR r = MAX ( 0, r0 + [Return Delta] )
+RETURN
+    net * ( 1 - r )
+
+Baseline Contribution =
+CALCULATE ( [Contribution], REMOVEFILTERS ( dim_month ), REMOVEFILTERS ( dim_date ), dim_month[year] = 2025 )
+
+Baseline Revenue = [Base Net] - [Base Returned Net]
+
+Contribution Change % = DIVIDE ( [Projected Contribution], [Baseline Contribution] ) - 1
+
+Revenue Change % = DIVIDE ( [Projected Revenue], [Baseline Revenue] ) - 1

@@ -4,7 +4,7 @@ End-to-end strategic Business Intelligence solution for a simulated online retai
 Built for **DJS23SH2301L, Strategic Business Intelligence and Decision Engineering** (B.Tech AI and Data Science, Honors in Business Intelligence, Semester V), experiment 10: *Develop an end-to-end strategic BI solution for an enterprise use case*.
 
 The full write-up is in [`report/BI_Miniproject_Report.pdf`](report/BI_Miniproject_Report.pdf).
-Open [`outputs/dashboard.html`](outputs/dashboard.html) in a browser for the executive dashboard.
+**Power BI:** follow [`powerbi/BUILD_GUIDE.md`](powerbi/BUILD_GUIDE.md) to build the 6-page report from `powerbi/ShopSphere_BI_Data.xlsx` (data model), `powerbi/measures.dax` (DAX) and `powerbi/ShopSphere_theme.json`. A quick HTML copy of the dashboard is in [`outputs/dashboard.html`](outputs/dashboard.html).
 
 > All data is **synthetic**. Two problems are planted on purpose (Social CAC spike from Sep 2025, one vendor's delivery delays from Oct 2025) so the alert engine has something to find.
 
@@ -16,10 +16,10 @@ Open [`outputs/dashboard.html`](outputs/dashboard.html) in a browser for the exe
 | 2 | Decision tree (churn), what-if levers, goal seek, tornado sensitivity, Monte Carlo, TOPSIS / weighted-sum vendor ranking | `bi/segmentation.py`, `bi/scenario.py`, `bi/mcdm.py` |
 | 3 | Balanced scorecard (9 KPIs, RAG status), exception alerts (rules and z-scores), HTML executive dashboard | `bi/kpi.py`, `bi/alerts.py`, `bi/dashboard.py` |
 | 4 | Finance (budget variance, margin by category), marketing (RFM, CLV vs CAC by channel), operations (vendor performance) | `bi/kpi.py`, `bi/segmentation.py` |
-| 5 | Self-service what-if workbench (Streamlit) | `app.py` |
+| 5 | Power BI what-if page (slicer parameters + DAX), Streamlit copy | `powerbi/measures.dax`, `app.py` |
 | 6 | ETL with data-quality log and checks, 12 automated tests | `bi/etl.py`, `tests/` |
 
-Not built: HR analytics, cloud publishing (Power BI Service / Tableau Online) and natural-language query.
+Not built: HR analytics, publishing to Power BI Service and Q&A (steps in the build guide). The `.pbix` file is not in the repo; the build guide recreates it.
 
 ## Architecture
 
@@ -40,6 +40,7 @@ pip install -r requirements.txt
 python -m bi.pipeline            # generate data, ETL, analytics, dashboard (about 45 s)
 streamlit run app.py             # interactive what-if workbench
 pytest                           # 12 tests
+python -m bi.export_powerbi      # rebuild the Power BI Excel data model
 python report/build_report.py    # rebuild the PDF report
 ```
 

@@ -146,8 +146,8 @@ P(f"This mini project builds a complete strategic BI solution for ShopSphere, a 
   f"{dq['clean_rows']:,} order lines, 40 products and 6 vendors over 24 months. Raw files are cleaned and loaded into a "
   f"star schema in SQLite. On top of that I built a balanced scorecard, an exception-alert engine, RFM customer "
   f"segmentation, a channel-level CLV against CAC comparison, a churn decision tree, a what-if and Monte Carlo "
-  f"model for profit, and a TOPSIS ranking of vendors. Results are published as an executive dashboard in HTML and as a "
-  f"Streamlit what-if workbench.")
+  f"model for profit, and a TOPSIS ranking of vendors. The results are presented in a six-page Power BI report "
+  f"with DAX measures and a live what-if page, and also as an HTML dashboard and a Streamlit workbench.")
 P(f"For FY2025 the retailer earned {cr(A['revenue'])} ({pct(A['revenue_vs_budget'], 0)} of budget) at a gross margin of "
   f"{pct(A['gross_margin_pct'])}, against a 28% target. The system flagged two problems that were planted in the data: "
   f"Social-media acquisition cost rising from about Rs {soc['2025-08']:,.0f} to Rs {soc['2025-10']:,.0f} per customer, "
@@ -176,9 +176,11 @@ bullets([
 ])
 P("1.3 Scope", H2)
 P("I picked finance, marketing and operations from Unit 4. HR analytics is left out because a retail dataset of this "
-  "kind would need invented employee data, which adds nothing. The dashboard is built with Python and Plotly rather than "
-  "Power BI or Tableau, so that the whole project can be reproduced with one command and tested automatically. The "
-  "star schema and the CSV outputs can be loaded into Power BI directly if the faculty wants that view.")
+  "kind would need invented employee data, which adds nothing. I used "
+  "a Python-only pipeline for the data preparation and the heavier models (ETL, segmentation, churn tree, TOPSIS, "
+  "Monte Carlo), because those steps are then reproducible and tested. The presentation layer is Power BI Desktop: "
+  "the star schema is loaded from one Excel workbook, KPIs and the what-if projection are DAX measures, and the "
+  "report has six pages (Section 3.4).")
 
 # ---- 2 mapping ----------------------------------------------------------------------------
 P("2. Mapping to the syllabus", H1)
@@ -190,13 +192,13 @@ table(["Unit", "Syllabus topic", "What was built", "File"], [
      "Churn decision tree, what-if levers, goal seek, tornado chart, Monte Carlo, TOPSIS and weighted sum",
      "bi/scenario.py, bi/mcdm.py, bi/segmentation.py"],
     ["3", "EPM, KPIs, balanced scorecard, dashboard design, alerts, exception reporting",
-     "Nine-KPI balanced scorecard with RAG status, alert engine, HTML executive dashboard",
-     "bi/kpi.py, bi/alerts.py, bi/dashboard.py"],
+     "Nine-KPI balanced scorecard with RAG status, alert engine, executive overview page in Power BI (HTML copy also kept)",
+     "powerbi/measures.dax, bi/alerts.py"],
     ["4", "Finance, marketing and operations analytics",
      "Budget variance and margin analysis, RFM, CLV and CAC by channel, vendor performance", "bi/kpi.py, bi/segmentation.py"],
     ["5", "Self-service BI, automated insights, real-time analytics",
-     "Streamlit what-if workbench; alerts generated automatically on each run. Cloud publishing and natural-language "
-     "query were not built.", "app.py"],
+     "Power BI what-if page with slicers as parameters, and a Streamlit copy. Publishing to Power BI Service and Q&amp;A "
+     "are described in the build guide.", "powerbi/, app.py"],
     ["6", "Data quality, governance, ethics, ROI, mini-capstone planning",
      "Cleaning log, post-load checks, 12 automated tests, governance notes in Section 9", "bi/etl.py, tests/"],
 ], [1.0, 4.6, 7.4, 3.6])
@@ -235,6 +237,27 @@ table(["Step", "Rows affected"], [
     ["Clean order lines loaded", f"{dq['clean_rows']:,}"],
     ["Post-load checks failing", sum(v for k, v in dq.items() if k.startswith("check_"))],
 ], [10, 4])
+
+P("3.4 Power BI implementation", H2)
+P("The warehouse tables and the model results are exported to one Excel workbook with 17 sheets, which Power BI loads "
+  "in a single step. The model has nine relationships, all many-to-one with single-direction filtering: a month table "
+  "filters the date table, the date, customer and product tables filter sales, vendors filter products, and a channel "
+  "table filters both customers and marketing spend. A separate month table is needed because marketing spend and the "
+  "budget are monthly, while sales are daily, and a shared month key lets one slicer drive all three.")
+P("About 70 DAX measures cover revenue, margin, return rate, on-time delivery, budget variance, CAC and contribution. "
+  "The headline FY2025 measures use REMOVEFILTERS on the date tables so that they do not change when someone clicks a "
+  "month, which is how an executive card should behave. The what-if page uses seven calculated tables built with "
+  "GENERATESERIES as slicers. A measure reads each slicer with SELECTEDVALUE and falls back to a baseline value when "
+  "nothing is selected, so the page opens showing the actual FY2025 position. The projection measure uses the same "
+  "formula as the Python model, and the build guide lists the Python results to check the DAX against.")
+table(["Page", "Content", "Syllabus link"], [
+    ["1. Executive overview", "KPI cards, revenue against budget, margin trend, exception table", "Unit 3"],
+    ["2. Balanced scorecard", "Nine KPIs by perspective with red, amber and green status", "Unit 3"],
+    ["3. Marketing and customers", "CAC by channel, RFM segments, CLV against CAC, churn risk", "Unit 4"],
+    ["4. Operations and vendors", "On-time trend by vendor, TOPSIS ranking, margin by category", "Units 2 and 4"],
+    ["5. What-if analysis", "Seven slicers, projected against baseline contribution, preset scenarios", "Unit 2"],
+    ["6. Risk and sensitivity", "Tornado chart, Monte Carlo histogram and percentiles", "Unit 2"],
+], [4.2, 9.2, 3.2])
 
 # ---- 4 scorecard --------------------------------------------------------------------------
 P("4. Strategic KPIs and the balanced scorecard", H1)
@@ -406,7 +429,8 @@ bullets([
     "between products.",
     "The churn model uses one cutoff date and one train-test split. Cross-validation over several cutoffs is the "
     "obvious next step.",
-    "Cloud publishing, natural-language query and HR analytics from Units 4 and 5 were not built.",
+    "Publishing to Power BI Service, Q&amp;A (natural-language query) and HR analytics were not part of the build. The scorecard, "
+    "alerts, segments and Monte Carlo results are loaded into Power BI as tables from the Python models, not recomputed in DAX.",
 ])
 
 # ---- 10 conclusion ------------------------------------------------------------------------
@@ -416,13 +440,15 @@ P(f"The project takes a retailer's raw files to a set of decisions. The warehous
   f"have caught late, and the decision models show which levers matter. The most useful result is how unevenly the levers "
   f"compare: supplier cost and price move profit by tens of lakhs, while marketing moves it by a few lakhs. If I extended the work, "
   f"I would replace the assumed elasticity with one estimated from price changes in real data, and publish the "
-  f"dashboard through Power BI Service to cover the cloud part of Unit 5.")
+  f"report through Power BI Service to cover the cloud part of Unit 5.")
 
 # ---- 11 run -------------------------------------------------------------------------------
 P("11. How to run the project", H1)
 P("Install the packages with <font name='Courier'>pip install -r requirements.txt</font>. Then "
   "<font name='Courier'>python -m bi.pipeline</font> rebuilds everything and writes <font name='Courier'>outputs/dashboard.html</font>. "
-  "<font name='Courier'>streamlit run app.py</font> opens the what-if workbench, <font name='Courier'>pytest</font> runs the 12 tests, "
+  "<font name='Courier'>python -m bi.export_powerbi</font> writes the Excel workbook for Power BI, and "
+  "<font name='Courier'>powerbi/BUILD_GUIDE.md</font> lists the relationships, measures and visuals for each page. "
+  "<font name='Courier'>streamlit run app.py</font> opens the Streamlit copy of the what-if workbench, <font name='Courier'>pytest</font> runs the 12 tests, "
   "and <font name='Courier'>python report/build_report.py</font> regenerates this report.")
 
 P("References", H1)
